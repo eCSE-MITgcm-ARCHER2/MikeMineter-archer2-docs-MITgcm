@@ -99,18 +99,23 @@ each for up to one hour.
     #   srun picks up the distribution from the sbatch options
     srun --distribution=block:block --hint=nomultithread ./mitgcmuv
     ```
-## Checkpoints of MITgcm
+## Exemplar models ported to Archer2
 Three exemplar models were ported to Archer2 during the eCSE project, eCSE02-6.
 Each model builds on a different checkpoint of the MITgcm as follows
-|| || checkpoint ||
-| ECCOv4 | 66g |
-| PAS | 67s |
-| AmundIce | branched from 68i, submitted for merging |
+|| || checkpoint || compiler ||
+| ECCOv4 | 66g | Cray |
+| PAS | 67s | Cray |
+| AmundIce | [branched from 68i]((git@github.com:dngoldberg/MITgcm.git), submitted for merging | GNU |
+
+One issue with GNU is being explored, for one case (ECCOv4 with 360 cores) and this prevents the GNU opt file from being recommended equally with the Cray (Performance was similar with optimisation) 
+
+If you might wish to try the GNU compiler then do not extend your PATH to include the $MITGCM_ROOTDIR/tools - that causes a confusing edit to be made to the behaviour of "as." Being explicit with the path to genmake2 below avoids this.
 
 The AmundIce model entailed developments to the [StreamIce package](https://mitgcm.readthedocs.io/en/latest/phys_pkgs/streamice.html) to be able to use PETSc, and to the [MITgcm scripts](git@github.com:dngoldberg/MITgcm.git) so that adjoint runs could [use OpenAD in a Singularity container]( (https://mitgcm.readthedocs.io/en/latest/autodiff/autodiff.html#building-the-mitgcm-adjoint-using-an-openad-singularity-container) .
 
 The guidance for PAS and AmundIce is in the [eCSE project repositories](https://github.com/eCSE-MITgcm-ARCHER2)
 Below we give details for the ECCOv4 model.
+
 
 ## Reproducing the ECCO version 4 (release 4) state estimate on ARCHER2
 
