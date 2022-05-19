@@ -101,7 +101,7 @@ Three exemplar models were ported to Archer2 during the eCSE project, eCSE02-6.
 Each model builds on a different checkpoint of the MITgcm as follows
 - ECCOv4:  66g
 - PAS: 67s 
-- AmundIce: [branched from 68i](git@github.com:dngoldberg/MITgcm.git), submitted for merging 
+- AmundIce: [branched from 68i](https://git@github.com:dngoldberg/MITgcm.git), submitted for merging 
 
 We have released an opt file for the Cray compiler, ahving also explored GNU which is used for AmundIce. With GNU we are investigating a run-time failure for one case (ECCOv4 with 360 cores) and this prevents the GNU opt file from being recommended equally with the Cray (Performance was similar with optimisation) 
 
