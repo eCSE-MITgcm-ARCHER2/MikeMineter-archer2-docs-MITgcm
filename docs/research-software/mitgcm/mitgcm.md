@@ -13,6 +13,7 @@ flow of both the atmosphere and ocean.
 
   - [MITgcm home page](http://mitgcm.org)
   - [MITgcm documentation](https://mitgcm.readthedocs.io/en/latest/)
+  - [additional documentation from eCSE port of MITgcm to Archer2](https://github.com/eCSE-MITgcm-ARCHER2)
 
 ## Building MITgcm on ARCHER2
 
@@ -31,7 +32,7 @@ from the GitHub repository with the command
 
     git clone https://github.com/MITgcm/MITgcm.git
 
-You should then copy the ARCHER2 optfile into the MITgcm directories. You may use the files at the locations below for the 4-cabinet and full systems.
+You should then copy the ARCHER2 optfile into the MITgcm directories. You may use the files at the locations below.
 
 === "Full system"
     ```bash
@@ -40,15 +41,11 @@ You should then copy the ARCHER2 optfile into the MITgcm directories. You may us
   
 You should also set the following environment variables.
 `MITGCM_ROOTDIR` is used to locate the source code and should point to
-the top MITgcm directory. Optionally, adding the MITgcm tools directory
-to your `PATH` environment variable makes it easier to use tools such as
-`genmake2`, and the `MITGCM_OPT` environment variable makes it easier to
-refer to pass the optfile to `genmake2`.
+the top MITgcm directory. 
 
 === "Full system"
     ```
     export MITGCM_ROOTDIR=/path/to/MITgcm
-    export PATH=$MITGCM_ROOTDIR/tools:$PATH
     export MITGCM_OPT=$MITGCM_ROOTDIR/tools/build_options/dev_linux_amd64_cray_archer2
     ```
 
@@ -57,7 +54,7 @@ optfile to use. Other commonly used options might be to use extra source
 code with the `-mods` option, and to enable MPI with `-mpi`. You might
 then run a command that resembles the following:
 
-    genmake2 -mods /path/to/additional/source -mpi -optfile $MITGCM_OPT
+    $MITGCM_ROOTDIR/tools/genmake2 -mods /path/to/additional/source -mpi -optfile $MITGCM_OPT
 
 You can read about the full set of options available to `genmake2` by
 running
@@ -102,7 +99,19 @@ each for up to one hour.
     #   srun picks up the distribution from the sbatch options
     srun --distribution=block:block --hint=nomultithread ./mitgcmuv
     ```
-    
+## Checkpoints of MITgcm
+Three exemplar models were ported to Archer2 during the eCSE project, eCSE02-6.
+Each model builds on a different checkpoint of the MITgcm as follows
+|| || checkpoint ||
+| ECCOv4 | 66g |
+| PAS | 67s |
+| AmundIce | branched from 68i, submitted for merging |
+
+The AmundIce model entailed developments to the [StreamIce package](https://mitgcm.readthedocs.io/en/latest/phys_pkgs/streamice.html) to be able to use PETSc, and to the [MITgcm scripts](git@github.com:dngoldberg/MITgcm.git) so that adjoint runs could [use OpenAD in a Singularity container]( (https://mitgcm.readthedocs.io/en/latest/autodiff/autodiff.html#building-the-mitgcm-adjoint-using-an-openad-singularity-container) .
+
+The guidance for PAS and AmundIce is in the [eCSE project repositories](https://github.com/eCSE-MITgcm-ARCHER2)
+Below we give details for the ECCOv4 model.
+
 ## Reproducing the ECCO version 4 (release 4) state estimate on ARCHER2
 
 The ECCO version 4 state estimate (ECCOv4-r4) is an observationally-constrained numerical solution produced by the ECCO group at JPL. If you would like to reproduce the state estimate on ARCHER2 in order to create customised runs and experiments, follow the instructions below. They have been slightly modified from the JPL instructions for ARCHER2. 
@@ -172,12 +181,11 @@ Load the NetCDF modules:
 If you haven't already, set your environment variables:
 
     export MITGCM_ROOTDIR=../../../../MITgcm
-    export PATH=$MITGCM_ROOTDIR/tools:$PATH
     export MITGCM_OPT=$MITGCM_ROOTDIR/tools/build_options/dev_linux_amd64_cray_archer2
     
 Next, compile the executable:
 
-    genmake2 -mods ../code -mpi -optfile $MITGCM_OPT
+    $MITGCM_ROOTDIR/tools/genmake2 -mods ../code -mpi -optfile $MITGCM_OPT
     make depend
     make
     
@@ -212,9 +220,9 @@ To run on ARCHER2, submit a batch script to the Slurm scheduler. Here is an exam
     
     # Slurm job options (job-name, compute nodes, job time)
     #SBATCH --job-name=ECCOv4r4-test
-    #SBATCH --time=1:0:0
-    #SBATCH --nodes=8
-    #SBATCH --tasks-per-node=12
+    #SBATCH --time=2:0:0
+    #SBATCH --nodes=1
+    #SBATCH --tasks-per-node=96
     #SBATCH --cpus-per-task=1
     
     # Replace [budget code] below with your project code (e.g. t01)
@@ -230,10 +238,10 @@ To run on ARCHER2, submit a batch script to the Slurm scheduler. Here is an exam
     # Launch the parallel job
     #   Using 256 MPI processes and 128 MPI processes per node
     #   srun picks up the distribution from the sbatch options
-    srun --distribution=block:block --hint=nomultithread ./mitgcmuv
+    srun --distribution=block:cyclic --hint=nomultithread ./mitgcmuv
 
-This configuration uses 96 MPI processes at 12 MPI processes per node. Once the run has finished, in order to check that the run has successfully completed, check the end of one of the standard output files. 
-
+This configuration uses 96 MPI processes on one node. Once the run has finished, in order to check that the run has successfully completed, check the end of one of the standard output files. 
+The srun distribution of block:cyclic was found to be faster than the more routien Block:block, the difference being in how processes are allocated across NUMA regions.  This was no the case with all MITgcm exemplars tested
     tail STDOUT.0000
     
 It should read 
@@ -272,7 +280,7 @@ The compilation commands are similar to those used to build the forward case.
     module load cray-hdf5-parallel
 
     # compile adjoint model
-    ../../../MITgcm/tools/genmake2 -ieee -mpi -mods=../code_ad -of=(PATH_TO_OPTFILE)
+    $MITGCM_ROOTDIR/tools/genmake2 -ieee -mpi -mods=../code_ad -of=(PATH_TO_OPTFILE)
     make depend
     make adtaf
     make adall
