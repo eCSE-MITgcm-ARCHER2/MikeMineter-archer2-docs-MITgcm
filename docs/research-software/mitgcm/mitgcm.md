@@ -34,7 +34,6 @@ from the GitHub repository with the command
 
 You should then copy the ARCHER2 optfile into the MITgcm directories. You may use the files at the locations below.
 
-=== "Full system"
     ```bash
     cp /work/n02/shared/mjmn02/ECCOv4/cases/cce/cce1/scripts/dev_linux_amd64_cray_archer2 MITgcm/tools/build_options/
     ```
@@ -43,7 +42,6 @@ You should also set the following environment variables.
 `MITGCM_ROOTDIR` is used to locate the source code and should point to
 the top MITgcm directory. 
 
-=== "Full system"
     ```
     export MITGCM_ROOTDIR=/path/to/MITgcm
     export MITGCM_OPT=$MITGCM_ROOTDIR/tools/build_options/dev_linux_amd64_cray_archer2
@@ -73,7 +71,6 @@ following which will allow it to run on the ARCHER2 compute nodes. This
 example would run a pure MPI MITgcm simulation over 2 nodes of 128 cores
 each for up to one hour.
 
-=== "Full system"
     ```
     #!/bin/bash
 
@@ -102,14 +99,13 @@ each for up to one hour.
 ## Exemplar models ported to Archer2
 Three exemplar models were ported to Archer2 during the eCSE project, eCSE02-6.
 Each model builds on a different checkpoint of the MITgcm as follows
-|| || checkpoint || compiler ||
-| ECCOv4 | 66g | Cray |
-| PAS | 67s | Cray |
-| AmundIce | [branched from 68i]((git@github.com:dngoldberg/MITgcm.git), submitted for merging | GNU |
+- ECCOv4:  66g
+- PAS: 67s 
+- AmundIce: [branched from 68i]((git@github.com:dngoldberg/MITgcm.git), submitted for merging 
 
-One issue with GNU is being explored, for one case (ECCOv4 with 360 cores) and this prevents the GNU opt file from being recommended equally with the Cray (Performance was similar with optimisation) 
+We have released an opt file for the Cray compiler, ahving also explored GNU which is used for AmundIce. With GNU we are investigating a run-time failure for one case (ECCOv4 with 360 cores) and this prevents the GNU opt file from being recommended equally with the Cray (Performance was similar with optimisation) 
 
-If you might wish to try the GNU compiler then do not extend your PATH to include the $MITGCM_ROOTDIR/tools - that causes a confusing edit to be made to the behaviour of "as." Being explicit with the path to genmake2 below avoids this.
+If you might wish to try the GNU compiler then do not extend your PATH to include the $MITGCM_ROOTDIR/tools. A script in tools causes a confusing edit to be made to the behaviour of "as." Being explicit with the path to genmake2 below avoids this.
 
 The AmundIce model entailed developments to the [StreamIce package](https://mitgcm.readthedocs.io/en/latest/phys_pkgs/streamice.html) to be able to use PETSc, and to the [MITgcm scripts](git@github.com:dngoldberg/MITgcm.git) so that adjoint runs could [use OpenAD in a Singularity container]( (https://mitgcm.readthedocs.io/en/latest/autodiff/autodiff.html#building-the-mitgcm-adjoint-using-an-openad-singularity-container) .
 
