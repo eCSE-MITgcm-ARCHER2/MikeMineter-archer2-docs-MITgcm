@@ -113,6 +113,9 @@ The guidance for PAS and AmundIce is in the [eCSE project repositories](https://
 Below we give details for the ECCOv4 model.
 
 
+## Namelist terminators
+Note that with Cray either & or "/" can be used to terminate namelists, but consistency is needed. With GNU namelist terminators were changed to "/."
+
 ## Reproducing the ECCO version 4 (release 4) state estimate on ARCHER2
 
 The ECCO version 4 state estimate (ECCOv4-r4) is an observationally-constrained numerical solution produced by the ECCO group at JPL. If you would like to reproduce the state estimate on ARCHER2 in order to create customised runs and experiments, follow the instructions below. They have been slightly modified from the JPL instructions for ARCHER2. 
